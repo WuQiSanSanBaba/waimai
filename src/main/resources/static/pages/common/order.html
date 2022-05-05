@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../js/vue.js"></script>
+    <script src="../../js/axios-0.18.0.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../../element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app">
+
+    <template>
+        <el-table
+                :data="tableData"
+                border
+                style="width: 100%">
+            <el-table-column
+                    prop="id"
+                    label="订单号"
+                     >
+                <el-table-column
+                        prop="storeName"
+                        label="商店名称"
+                >
+            </el-table-column>
+            <el-table-column
+                    prop="userName"
+                    label="收货人"
+                     >
+            </el-table-column>
+            <el-table-column
+                    prop="phonenumber"
+                    label="电话号"
+                     >
+            </el-table-column>
+            <el-table-column
+                    prop="date"
+                    label="下单时间"
+                     >
+            </el-table-column>
+            <el-table-column
+                    prop="addr"
+                    label="地址"
+                     >
+            </el-table-column>
+            <el-table-column
+                    prop="status"
+                    label="状态"
+            >
+            </el-table-column>
+            <el-table-column
+                    width="250px"
+                    label="商品数据"
+                    >
+
+                <template slot-scope="scope" >
+                    <thead>
+                    <tr >
+                        <th><el-tag  effect="dark">--名称--</el-tag></th>
+                        <th><el-tag  effect="dark">--数量--</el-tag></th>
+                        <th><el-tag  effect="dark">--小计--</el-tag></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="c in scope.row.bill">
+
+                        <td><label  :for="c.id">{{c.name}}</label></td>
+                        <td><label :for="c.id">{{c.number}}</label></td>
+                        <td><label :for="c.id">{{c.subtotal}}元</label></td>
+                    </tr>
+                    </tbody>
+                </template>
+            </el-table-column>
+            </el-table-column>
+
+            <el-table-column
+                    prop="total"
+                    label="总计 单位：元"
+            >
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+
+                    <el-button
+                            size="mini"
+                            type="danger"
+                            @click="deleteorder(scope.row)">取消</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </template>
+
+</div>
+</body>
+</html>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+            checkitemIds:[],
+            tableData: [
+    ]
+    },created(){
+            this.init();
+        },
+        methods:{
+            init(){
+                axios.get("/user/getorder").then((res)=>{
+                    if (res.data.flag) {
+                        this.tableData = res.data.data;
+                    } else {
+                        this.$message.error(res.data.message)
+                    }
+                })
+            },deleteorder(row){
+                this.$confirm('确定取消订单吗', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '没有',
+                    type: 'error'
+                }).then(() => {
+
+                    axios.delete("/common/deleteorder/"+row.id).then((res)=>{
+                        if (res.data.flag){
+                            this.$message.success(res.data.message);
+                            this.init();
+                        }else {
+                            this.$message.error(res.data.message);
+                        }
+                    }).finally(()=>{
+                        this.init();
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消'
+                    });
+                })
+
+
+
+
+
+            },
+        }
+    })
+</script>

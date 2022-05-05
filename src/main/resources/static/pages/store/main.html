@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>商家管理界面</title>
+    <script src="../../js/vue.js"></script>
+    <script src="../../js/axios-0.18.0.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../../element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app">
+    <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+        <el-menu-item @click="first" >店铺首页</el-menu-item>
+        <el-menu-item @click="second">消息中心</el-menu-item>
+        <el-menu-item @click="third" >商品管理</el-menu-item>
+        <el-menu-item @click="fivth" >订单管理</el-menu-item>
+        <el-menu-item @click="fourth" >退出登录</el-menu-item>
+    </el-menu>
+    <iframe ref="iframe" id="bdIframe" class="bottom" v-bind:src="contents" frameborder="0"
+            ></iframe>
+</div>
+</body>
+</html>
+<script>
+    new Vue(
+        {
+            el:"#app",
+            data:{
+                contents: "homepage.html"
+
+            },
+
+            mounted() {
+                /**
+                 * iframe-宽高自适应显示
+                 */
+                const oIframe = document.getElementById('bdIframe');
+                const deviceWidth = document.documentElement.clientWidth;
+                const deviceHeight = document.documentElement.clientHeight;
+                oIframe.style.width = (Number(deviceWidth)) + 'px'; //数字是页面布局宽度差值
+                oIframe.style.height = (Number(deviceHeight)-120) + 'px'; //数字是页面布局高度差
+            },
+            methods:{
+        first(){
+            this.contents="homepage.html";
+        },second(){
+            this.contents="../common/message.html";
+        },third(){
+            this.contents="goods.html";
+        },fourth(){
+            axios.get("/store/quitlogin").then((res)=>{
+                window.location.href = '/index.html';
+            })
+        },fivth(){
+            this.contents="order.html"
+                }
+
+        }}
+    )
+</script>

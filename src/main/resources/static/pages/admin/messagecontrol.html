@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>消息中心</title>
+    <script src="../../js/vue.js"></script>
+    <script src="../../js/axios-0.18.0.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../../element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app">
+    <template>
+        <el-col :span="13" class="grid">
+            <el-input v-model="input" placeholder="请输入内容"></el-input>
+        </el-col>
+        <el-button type="primary" @click="add" round>添加消息</el-button>
+        <el-table
+                :data="tableData"
+                style="width: 100%">
+            <el-table-column
+                             prop="id"
+                             label="消息id"
+            >
+            </el-table-column>
+            <el-table-column
+                             prop="message"
+                             label="消息"
+            >
+            </el-table-column>
+            <el-table-column
+                    label="展示/隐藏"
+                    >
+                <template slot-scope="scope">
+                    <el-switch v-model="scope.row.hide"
+                               :active-value="1"
+                               :inactive-value="0"
+                               @change=change(scope.row)>
+                    </el-switch>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    fixed="right"
+                    label="删除"
+                    width="100">
+                <template slot-scope="scope">
+                    <el-button @click="deletebyid(scope.row)" type="danger" size="small" plain>删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </template>
+
+</div>
+</body>
+</html>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+            input:"",
+            tableData:[{message:"欢迎"}]
+        },created(){
+            this.getmessage();
+        },
+        methods:{
+            getmessage(){
+                axios.get("/admin/getmessage").then((res)=>{
+                    if (res.data.flag) {
+                        this.tableData = res.data.data;
+                    } else {
+                        this.$message.error(res.data.message);
+                    }
+                })
+            },change(row){
+                if (row.hide===1){
+                    axios.put("/admin/messagechange/1/"+row.id).then((res)=>{
+                        if (res.data.flag){
+                            this.$message.success(res.data.message);
+                        }else {
+                            this.$message.error(res.data.message);
+                        }
+
+                    })
+                }
+                else {
+                    axios.put("/admin/messagechange/0/"+row.id).then((res)=>{
+                        if (res.data.flag){
+                            this.$message.success(res.data.message);
+                        }else {
+                            this.$message.error(res.data.message);
+                        }})
+                }
+            },
+            deletebyid(row){
+             axios.delete("/admin/deletemessagebyid/"+row.id).then((res)=>{
+                 if (res.data.flag){
+                     this.$message.success(res.data.message);
+                 }
+                 else {
+                     this.$message.error(res.data.message);
+                 }
+             }).finally(()=>{
+                 this.getmessage();
+             })
+            },
+            add(){
+                axios.post("/admin/addmessage/"+this.input).then((res)=>{
+                    if (res.data.flag){
+                        this.$message.success(res.data.message);
+                    }else {
+                        this.$message.error(res.data.message);
+                    }
+                }).finally(()=>{
+                    this.getmessage();
+                })
+            }
+
+        }
+    })
+</script>

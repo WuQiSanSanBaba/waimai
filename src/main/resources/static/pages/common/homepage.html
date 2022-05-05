@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+  <!-- 页面meta -->
+  <meta charset="utf-8">
+
+  <title>用户注册</title>
+  <!--    引入资源-->
+  <script src="../../js/vue.js"></script>
+  <script src="../../js/axios-0.18.0.js"></script>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+  <!-- 引入组件库 -->
+  <script src="../../element-ui/lib/index.js"></script>
+  <style>
+    div{text-align:center}
+  </style>
+</head>
+<body>
+<div id="app">
+  <h1>推荐店铺</h1>
+  <!--走马灯显示推荐店铺-->
+  <template>
+  <div class="block">
+    <el-carousel :interval="4000" type="card" height="500px">
+      <el-carousel-item v-for="item in storeCarousel" :key="item">
+        <h3 class="medium" @click="showStore(item)">{{ item.name }}</h3>
+        <img id="img" height="90%" width="100%"  :src="item.imgaddr" @click="showStore(item)" alt="无图片"/>
+      </el-carousel-item>
+    </el-carousel>
+  </div>
+  </template>
+  <!--列表数据表单-->
+  <h1>全部店铺</h1>
+  <template>
+    <el-table
+            :data="store"
+            style="width: 100%"
+            :row-class-name="tableRowClassName">
+      </el-table-column>
+      <el-table-column
+              prop="img"
+              label="头像"
+      >
+        <template slot-scope="scope">
+          <img :src="scope.row.imgaddr" width="75" height="75"/>
+        </template>
+      </el-table-column>
+      <el-table-column
+              prop="name"
+              label="商铺名称"
+      >
+      </el-table-column>
+
+      <el-table-column
+              prop="phonenumber"
+              label="联系方式">
+      </el-table-column>
+      <el-table-column
+              prop="addr"
+              label="地址">
+      </el-table-column>
+      <el-table-column
+              prop="openhours"
+              label="营业时间">
+      </el-table-column>
+      <el-table-column
+              prop="description"
+              label="店铺简介">
+      </el-table-column>
+      <el-table-column
+              prop="salecount"
+              label="销售单量">
+      </el-table-column>
+
+      <el-table-column
+              fixed="right"
+              label="进入"
+              width="100">
+        <template slot-scope="scope">
+          <el-button @click="showStore(scope.row)" type="warning" size="small" plain>进入</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+  </template>
+
+  <!--店铺详情弹窗-->
+  <el-dialog
+          title=""
+          :visible.sync="dialogVisible"
+          width="80%"
+          :before-close="handleClose">
+
+    <iframe  id="bdIframe"  v-bind:src="contents" height="500px" width="100%"
+    ></iframe>
+    <span slot="footer" class="dialog-footer">
+  </span>
+  </el-dialog>
+</div>
+</body>
+</html>
+<script>
+  new Vue({
+    el:"#app",
+    data: {
+      contents:"",
+      dialogVisible: false,
+      storeCarousel: [
+      ],
+      store:[{name:"老鸭粉丝汤"}]
+    },created(){
+      this.init();
+      this.initCarousel();
+    },mounted(){
+      window.closeDialog= this.closeDialog;
+    },
+    methods: {
+       showStore(item){
+         this.dialogVisible=true;
+         axios.post("/common/browsestore",item).then((res)=>{
+           if (res.data.flag){
+             this.contents="/pages/common/goods.html"
+             document.getElementById('bdIframe').contentWindow.location.reload();
+           }else
+           {
+             this.$message.error(res.data.message)
+           }
+         })
+       },
+      init(){
+        axios.get("/common/getallstore").then((res)=>{
+          if (res.data.flag){
+            this.store=res.data.data;
+          }else {
+            this.$message.error(res.data.message)
+          }
+        })
+      },
+      initCarousel(){
+        axios.get("/common/initcarousel").then((res)=>{
+          if (res.data.flag){
+            this.storeCarousel=res.data.data;
+          }else {
+            this.$message.error(res.data.message);
+          }
+        })
+      },closeDialog(){
+         this.dialogVisible=false;
+         this.$message.success("下单成功，请等待配送")
+        window.setTimeout(function () {
+          window.location.reload();
+        },1000);
+         parent.window.location.reload();
+
+
+      }
+    }
+
+  })
+</script>

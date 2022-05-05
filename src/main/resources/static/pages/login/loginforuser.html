@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>用户登录</title>
+    <!--    引入资源-->
+    <script src="../../js/vue.js"></script>
+    <script src="../../js/axios-0.18.0.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../../element-ui/lib/index.js"></script>
+    <style scoped>
+        .login-container {
+            width: 100%;
+            height: 100%;
+        }
+
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <template>
+        <div class="login-container">
+            <el-form :model="ruleForm2" :rules="rules2"
+                     status-icon
+                     ref="ruleForm2"
+                     label-position="left"
+                     label-width="0px"
+                     class="demo-ruleForm login-page">
+
+                <h3 class="title">用户登录</h3>
+                <el-form-item prop="username">
+                    <el-input type="text"
+                              v-model="ruleForm2.username"
+                              auto-complete="off"
+                              placeholder="用户名"
+                    ></el-input>
+                </el-form-item>
+                <el-form-item prop="password">
+                    <el-input type="password"
+                              v-model="ruleForm2.password"
+                              auto-complete="off"
+                              placeholder="密码"
+                    ></el-input>
+                </el-form-item>
+
+                <el-form-item style="width:100%;">
+                    <el-button type="primary" style="width:100%;" @click="handleSubmit" :loading="logining">登录</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </template>
+</div>
+</body>
+</html>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+
+            logining: false,
+            ruleForm2: {
+                username: '',
+                password: '',
+            },
+            rules2: {
+                username: [{required: true, message: '请输入账号', trigger: 'blur'}],
+                password: [{required: true, message: '请输入密码', trigger: 'blur'}]
+            },
+            checked: false
+        }
+        ,
+        methods: {
+            handleSubmit(event){
+                this.$refs.ruleForm2.validate((valid) => {
+                    if(valid){
+
+                        axios.post("/user/userlogin",this.ruleForm2).then((res)=>{
+                            if (res.data.flag){
+                                parent.login();
+                                this.$alert(res.data.message, '登录成功', {
+                                    confirmButtonText: '好的'
+                                })
+                            }else {
+                                this.logining = false;
+                                this.$alert(res.data.message, '登录失败', {
+                                    confirmButtonText: '好的'
+                                })
+                            }
+                        })
+                    }
+                })
+            }
+        }
+
+    })
+</script>

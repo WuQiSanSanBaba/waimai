@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>管理员页面</title>
+    <!--    引入资源-->
+    <script src="../../js/axios-0.18.0.js"></script>
+    <script src="../../js/vue.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../../element-ui/lib/index.js"></script>
+
+    <style>
+        .el-header, .el-footer {
+            background-color: #ffffff;
+            color: #333;
+            text-align: right;
+            line-height: 10px;
+        }
+        .el-main {
+            background-color: #fdfdfd;
+            color: #333;
+            text-align: center;
+            line-height: 900px;
+        }
+
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <el-menu
+            :default-active="activeIndex2"
+            class="el-menu-demo"
+            mode="horizontal"
+            @select="handleSelect"
+            background-color="#545c64"
+            text-color="#fff"
+            active-text-color="#ffd04b">
+        <el-menu-item @click="first">首页</el-menu-item>
+        <el-menu-item @click="second">店铺管理</el-menu-item>
+        <el-menu-item @click="third">消息管理</el-menu-item>
+        <el-menu-item @click="fourth">用户管理</el-menu-item>
+        <el-menu-item @click="fiveth">订单管理</el-menu-item>
+        <el-menu-item @click="quit">退出管理员</el-menu-item>
+        <el-menu-item >项目是否上线 <el-switch
+                v-model="value"
+                :active-value="1"
+                :inactive-value="0"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                @change="onlinebtton" >
+        </el-switch>
+        </el-menu-item>
+        <!--为了头像往右点-->
+        <el-menu-item disabled="">管理员账户</el-menu-item>
+        <el-menu-item @click="user">
+            <el-avatar size="number" src="../../img/admin/default.jpg"></el-avatar>
+        </el-menu-item>
+    </el-menu>
+    <!--下方界面-->
+    <template>
+        <div>
+            <!--width和height对应下方页面宽度-->
+            <iframe ref="iframe" id="bdIframe" class="bottom" v-bind:src="contents" frameborder="0"
+                    ></iframe>
+        </div>
+    </template>
+</div>
+</body>
+<script>
+    new Vue(
+        {
+            el: '#app',
+            data: {value: 1,//项目是否上线
+                /*默认为欢迎页面*/
+                contents: "welcome.html"
+            },
+            created() {
+                //打开网页，自动弹出用来欢迎
+                this.welcome();
+            },
+            mounted() {
+                /**
+                 * iframe-宽高自适应显示
+                 */
+                const oIframe = document.getElementById('bdIframe');
+                const deviceWidth = document.documentElement.clientWidth;
+                const deviceHeight = document.documentElement.clientHeight;
+                oIframe.style.width = (Number(deviceWidth)) + 'px'; //数字是页面布局宽度差值
+                oIframe.style.height = (Number(deviceHeight)) + 'px'; //数字是页面布局高度差
+            },
+            methods: {
+                //修改平台上线状态
+                onlinebtton(){
+                    if (this.value){
+                        axios.put("/admin/changeonline/"+1).then((res)=>{
+                            if (res.data.flag){
+                                this.$message.success(res.data.message);
+                            }else {
+                                this.$message.error(res.data.message);
+                            }
+
+                        })
+                    }
+                    else {
+                        axios.put("/admin/changeonline/"+0).then((res)=>{
+                            if (res.data.flag){
+                                this.$message.success(res.data.message);
+                            }else {
+                                this.$message.error(res.data.message);
+                            }})
+                    }
+                },
+                //弹出欢迎界面用于刚开始打开网页
+                welcome() {
+                    axios.get("/admin/getisonlne").then((res)=>{
+                        if (res.data.flag){
+                            this.value=res.data.data;
+                        }else {
+                            this.$message.error(res.data.message)
+                        }
+                    })
+                    const h = this.$createElement;
+                    this.$notify({
+                        title: '欢迎',
+                        message: h('i', {style: 'color: teal'}, '欢迎进入管理员页面，您将获得最高权限(此弹层会自动消失)'),
+                        type: 'success',
+                        position: 'bottom-left'
+                    });
+                },//对应第0个
+                first() {
+                    this.contents = "welcome.html"
+                },
+                 second() {
+                    const h = this.$createElement;
+                    this.contents = "store.html"
+                    this.$notify({
+                        title: '店铺管理',
+                        message: h('i', {style: 'color: teal'}, '此页用于管理店铺信息'),
+                        type: 'success',
+                        position: 'bottom-left'
+                    });
+                },third() {
+                    const h = this.$createElement;
+                    this.contents = "messagecontrol.html"
+                    this.$notify({
+                        title: '消息管理',
+                        message: h('i', {style: 'color: teal'}, '此页用于发布全站公告'),
+                        type: 'success',
+                        position: 'bottom-left'
+                    });
+                },fourth(){
+                    const h = this.$createElement;
+                    this.contents = "user.html"
+                    this.$notify({
+                        title: '用户管理',
+                        message: h('i', {style: 'color: teal'}, '此页用于管理所有用户'),
+                        type: 'success',
+                        position: 'bottom-left'
+                    });
+                },
+                fiveth(){
+                    const h = this.$createElement;
+                    this.contents = "order.html"
+                    this.$notify({
+                        title: '订单管理',
+                        message: h('i', {style: 'color: teal'}, '此页用于管理所有订单'),
+                        type: 'success',
+                        position: 'bottom-left'
+                    });
+                },
+                quit(){
+                  axios.delete("/admin/quitadminlogin").then((res)=>{
+                      this.$message.success(res.data.message)
+                      window.location.href = '/index.html';
+                  })
+                },
+                user() {
+                    const h = this.$createElement;
+                    this.$notify({
+                        title: '管理员介绍',
+                        message: h('i', {style: 'color: teal'}, '本项目由王琦制作'),
+                        type: 'success',
+                        position: 'bottom-left'
+                    });
+                }
+            }
+        }
+    )
+</script>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理</title>
+    <!--    引入资源-->
+    <script src="../../js/axios-0.18.0.js"></script>
+    <script src="../../js/vue.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../../element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app">
+
+    <!--搜索栏-->
+    <el-col :span="13" class="grid">
+        <el-input v-model="query" placeholder="请输入商品名"></el-input>
+    </el-col>
+    <!--两个按钮-->
+    <el-button type="primary" @click="findpage">搜索</el-button>
+    <el-button type="primary" @click="add">添加</el-button>
+    <!--添加弹窗-->
+    <el-dialog
+            title="添加商品"
+            :visible.sync="dialogVisible"
+    >
+        <!--信息-->
+        <el-form ref="form" :model="addform" label-width="80px">
+            <el-form-item label="用户昵称">
+                <el-input v-model="addform.name"></el-input>
+            </el-form-item>
+            <el-form-item label="用户地址">
+                <el-input v-model="addform.addr"></el-input>
+            </el-form-item>
+            <el-form-item label="用户名">
+                <el-input v-model="addform.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+                <el-input v-model="addform.password"></el-input>
+            </el-form-item>
+            <el-form-item label="电话号">
+                <el-input v-model="addform.phonenumber"></el-input>
+            </el-form-item>
+            <el-form-item label="余额">
+                <el-input v-model="addform.balance"></el-input>
+            </el-form-item>
+            <!--图片-->
+            <el-form-item label="上传图片">
+                <el-upload
+                        class="avatar-uploader"
+                        action="/store/upload"
+                        :auto-upload="autoUpload"
+                        name="imgFile"
+                        :show-file-list="false"
+                        :on-success="handleAvatarSuccess"
+                        :before-upload="beforeAvatarUpload">
+                    <img v-if="imageUrl" :src="imageUrl" class="avatar" height="200" width="200">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
+            </el-form-item>
+            <!--按钮-->
+            <el-form-item>
+                <el-button type="primary" @click="onSubmit">添加</el-button>
+                <el-button @click="dialogVisible = false">取消</el-button>
+            </el-form-item>
+        </el-form>
+        </el-form>
+    </el-dialog>
+    <!--编辑弹窗-->
+    <el-dialog
+            title="编辑商品"
+            :visible.sync="dialogVisibleEdit"
+    >
+        <!--信息-->
+        <el-form ref="form" :model="form" label-width="80px">
+            <el-form-item label="用户昵称">
+                <el-input v-model="editform.name"></el-input>
+            </el-form-item>
+            <el-form-item label="用户地址">
+                <el-input v-model="editform.addr"></el-input>
+            </el-form-item>
+            <el-form-item label="用户名">
+                <el-input v-model="editform.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+                <el-input v-model="editform.password"></el-input>
+            </el-form-item>
+            <el-form-item label="电话号">
+                <el-input v-model="editform.phonenumber"></el-input>
+            </el-form-item>
+            <el-form-item label="余额">
+                <el-input v-model="editform.balance"></el-input>
+            </el-form-item>
+            <!--图片-->
+            <el-form-item label="上传图片">
+                <el-upload
+                        class="avatar-uploader"
+                        action="/admin/upload"
+                        :auto-upload="autoUpload"
+                        name="imgFile"
+                        :show-file-list="false"
+                        :on-success="handleAvatarSuccess1"
+                        :before-upload="beforeAvatarUpload">
+                    <img v-if="imageUrl1" :src="imageUrl1" class="avatar" height="200" width="200">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
+            </el-form-item>
+            <!--按钮-->
+            <el-form-item>
+                <el-button type="primary" @click="onEdit">修改</el-button>
+                <el-button @click="dialogVisibleEdit = false">取消</el-button>
+            </el-form-item>
+        </el-form>
+
+    </el-dialog>
+    <!--数据表格-->
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%"
+                :default-sort = "{prop: 'date', order: 'descending'}"
+        >   <el-table-column
+                prop="img"
+                label="头像"
+        >
+            <template slot-scope="scope">
+                <img :src="scope.row.imgaddr" width="75" height="75"/>
+            </template>
+        </el-table-column>
+            <el-table-column
+                    prop="id"
+                    label="id"
+                    sortable
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="name"
+                    label="昵称"
+                    sortable
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="addr"
+                    label="地址"
+                    :formatter="formatter">
+            </el-table-column>
+            <el-table-column
+                    prop="username"
+                    label="用户名"
+                    >
+            </el-table-column>
+            <el-table-column
+                    prop="password"
+                    label="密码"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="phonenumber"
+                    label="电话号"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="balance"
+                    label="余额"
+            >
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <el-button
+                            size="mini"
+                            @click="recharge1(scope.row)">充值</el-button>
+                    <el-button
+                            size="mini"
+                            @click="edit(scope.row)">编辑</el-button>
+                    <el-button
+                            size="mini"
+                            type="danger"
+                            @click="deleteUser(scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+
+        </el-table>
+    </template>
+
+    <el-pagination prop="pagination"
+                   background
+                   layout="prev, pager, next"
+                   :total="pagination.total"
+                   :page-size="pagination.pageSize"
+                   @current-change="pageCurrentChange"
+    >
+    </el-pagination>
+<!--充值的-->
+    <el-dialog title="收货地址" :visible.sync="dialogFormVisibleRecharge">
+        <el-form :model="form">
+            <el-form-item label="充值金额" :label-width="formLabelWidth">
+                <el-input v-model="recharge" autocomplete="off"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisibleRecharge = false">取 消</el-button>
+            <el-button type="primary" @click="onSubmitRecharge">确 定</el-button>
+        </div>
+    </el-dialog>
+</div>
+</body>
+</html>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+            rechargeid:0,
+            recharge:0,
+            query: "",
+            autoUpload: true,//自动上传
+            imageUrl: null,//模型数据，用于上传图片完成后图片预览---对应添加时候的
+            imageUrl1: null,//对应修改时候的上传图片
+            dialogVisible: false,//添加弹窗
+            dialogVisibleEdit: false,//编辑弹窗
+            dialogFormVisibleRecharge:false,//充值弹窗
+            tableData:[],
+            addform: {},
+            editform: {},
+            pagination: {
+                currentPage: 1,
+                pageSize: 10,
+                total: 50,
+            },},
+        created() {
+            this.findpage();
+        },
+            methods: {
+                deleteUser(row) {
+                    this.$confirm('此操作将删除该条数据,是否继续？', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        axios.delete("/admin/deletebyiduser/" + row.id + "/" + row.imgname).then((res) => {
+                            if (res.data.flag) {
+                                this.$message.success(res.data.message);
+                            } else {
+                                this.$message.error(res.data.message);
+                            }
+                        }).finally(() => {
+                            this.findpage();
+                        })
+                    })
+                        .catch(() => {
+                            this.$message.info("取消删除")
+                        })
+
+                },
+                //文件上传成功后的钩子，response为服务端返回的值，file为当前上传的文件封装成的js对象
+                handleAvatarSuccess(response, file) {
+                    this.imageUrl ="/img/upload/"+ response.data;
+                    if (response.flag) {
+                        this.$message.success(response.message)
+                    } else {
+                        this.$message.error(response.message)
+                    }
+                    this.addform.imgname=response.data;
+                    this.addform.imgaddr="/img/upload/"+ response.data;
+
+                }, //文件上传成功后的钩子，response为服务端返回的值，file为当前上传的文件封装成的js对象----修改过程
+                handleAvatarSuccess1(response, file) {
+                    this.imageUrl1="/img/upload/"+ response.data;
+                    if (response.flag) {
+                        this.$message.success(response.message)
+                    } else {
+                        this.$message.error(response.message)
+                    }
+                    this.editform.imgname=response.data;
+                    this.editform.imgaddr="/img/upload/"+ response.data;
+
+                },
+                //上传图片之前执行
+                beforeAvatarUpload(file) {
+                    const isJPG = file.type === 'image/jpeg';
+                    const isLt2M = file.size / 1024 / 1024 < 2;
+                    if (!isJPG) {
+                        this.$message.error('上传套餐图片只能是 JPG 格式!');
+                    }
+                    if (!isLt2M) {
+                        this.$message.error('上传套餐图片大小不能超过 2MB!');
+                    }
+                    return isJPG && isLt2M;
+                },
+                findpage() {
+                    var pageCondition = {
+                        currentPage: this.pagination.currentPage,
+                        pageSize: this.pagination.pageSize,
+                        query: this.query
+                    }
+                    axios.post("/admin/findbypageuser", pageCondition).then((res) => {
+                        if (res.data.flag) {
+                            this.tableData = res.data.data.list;
+                            this.pagination.total = res.data.data.total;
+                        } else {
+                            this.$message.error(res.data.message);
+                        }
+                    })
+                },
+                pageCurrentChange(currentpage) {
+                    this.pagination.currentPage = currentpage;
+                    this.findpage();
+                },
+                handleRemove(file, fileList) {
+                    console.log(file, fileList);
+                },
+                handlePreview(file) {
+                    console.log(file);
+                },
+                //弹出添加窗口
+                add() {
+                    this.reset()
+                    this.dialogVisible = true;
+                },
+                //清空表格
+                reset() {
+                    this.imageUrl='';
+                    this.imageUrl1='';
+                    this.addform = {};
+                    this.editform = {};
+                },
+                //添加按钮
+                onSubmit() {
+                    //隐藏窗口
+                    this.dialogVisible = false;
+                    //发送异步请求
+                    axios.post("/admin/adduser", this.addform).then((res) => {
+                        if (res.data.flag) {
+                            this.$message.success(res.data.message);
+                        } else {
+                            this.$message.error(res.data.message);
+                        }
+
+                    }).finally(() => {
+                        this.findpage();
+                    })
+                },
+                //回显数据
+                edit(row) {
+                    //首先重置数据
+                    this.reset();
+                    this.dialogVisibleEdit = true;
+                    axios.get("/admin/getbyiduser/" + row.id).then((res) => {
+                        if (res.data.flag) {
+                            this.editform = res.data.data;
+
+                        } else {
+                            res.$message.warning(res.data.message);
+                        }
+                    })
+                },
+                //修改表单提交表单提交
+                onEdit() {
+                    axios.put("/admin/edituser", this.editform).then((res) => {
+                        if (res.data.flag) {
+                            this.$message.success(res.data.message);
+                        } else {
+                            this.$message.error(res.data.message);
+                        }
+                    }).finally(() => {
+                        this.dialogVisibleEdit = false;
+                        this.findpage();
+                    })
+                },
+                recharge1(row){
+                    this.rechargeid=row.id;
+                    this.dialogFormVisibleRecharge=true;
+                },
+                onSubmitRecharge(){
+                    axios.post("/admin/recharge/"+this.rechargeid+"/"+this.recharge).then((res)=>{
+                        if (res.data.flag){
+                            this.$message.success(res.data.message);
+                        }else {
+                            this.$message.error(res.data.message);
+                        }
+                    }).finally(()=>{
+                       this. dialogFormVisibleRecharge=false;
+                        this.findpage();
+                    })
+                }
+
+
+            },
+
+        })
+</script>
+

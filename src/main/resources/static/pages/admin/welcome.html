@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面</title>
+    <!--    引入资源-->
+    <script src="../../js/vue.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../../element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app">
+
+    <template>
+        <el-alert
+                title="欢迎使用外卖后台管理系统"
+                type="success"
+                :closable="false">
+        </el-alert>
+        <div class="demo-image__placeholder">
+
+            <div class="block">
+                <span class="demonstration"></span>
+                <el-image :src="src">
+                    <div slot="placeholder" class="image-slot">
+                        加载中<span class="dot">...</span>
+                    </div>
+                </el-image>
+            </div>
+        </div>
+
+    </template>
+</div>
+</body>
+</html>
+<script>
+    new Vue(
+        {
+            el: '#app',
+            data:{
+
+                src: '../../img/admin/welcome.png'
+            },
+
+            methods: {
+
+            }
+        })
+</script>
